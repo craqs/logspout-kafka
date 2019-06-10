@@ -136,13 +136,23 @@ func (a *KafkaAdapter) formatMessage(message *router.Message) (*sarama.ProducerM
 		}
 		encoder = sarama.ByteEncoder(w.Bytes())
 	} else {
-		encoder = sarama.StringEncoder(message.Data)
+		encoder = sarama.StringEncoder(toJSON(message))
 	}
 
 	return &sarama.ProducerMessage{
 		Topic: a.topic,
 		Value: encoder,
 	}, nil
+}
+
+
+func toJSON(value interface{}) string {
+	bytes, err := json.Marshal(value)
+	if err != nil {
+		log.Println("error marshalling to JSON: ", err)
+		return "null"
+	}
+	return string(bytes)
 }
 
 func readBrokers(address string) []string {
